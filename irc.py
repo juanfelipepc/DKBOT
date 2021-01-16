@@ -15,7 +15,6 @@ def message_send(prefix: str = "", data: str = ""):
     """Sends a command to IRC through the socket"""
 
     irc_sock.send(prefix.encode('utf-8') + b' ' + data.encode('utf-8') + b'\r\n')
-    print(prefix.encode('utf-8') + b' ' + data.encode('utf-8') + b'\r\n')
     time.sleep(0.01)
 
 
@@ -47,10 +46,7 @@ def listen(coming_data):
         for sentence in formatted_data:
             cmd_msg = CMD_MSG_REGEX.search(sentence)
             if cmd_msg:
-                msg_user = cmd_msg.group(1)
-                msg_source = cmd_msg.group(2)
-                msg_text = cmd_msg.group(3)
-                print(cmd_msg.groups())
+                msg_user, msg_source, msg_text = cmd_msg.group(1), cmd_msg.group(2), cmd_msg.group(3)
             print(sentence)
 
             if 'PING :' in sentence:
@@ -60,25 +56,11 @@ def listen(coming_data):
                 message_send('PONG', ping_echo)
                 return
             elif (":DKBOT:" in sentence) and (msg_user == bot_owner):
-                run_command(cmd_msg)
+                """Runs a command from any prefix given, as long as it's sent through IRC by
+                    the bot owner and following the PRIVMSG DKBOT: <command> <arguments> syntax
+                    For more information on IRC commands:
+                    https://en.wikipedia.org/wiki/List_of_Internet_Relay_Chat_commands"""
+
+                command_info = cmd_msg.group(3)
+                message_send(command_info, '')
                 return
-            elif irc_channel == msg_source:
-                return msg_user, msg_source, msg_text
-
-
-def run_command(priv_msg_data):
-    """Runs a command from any prefix given, as long as it's sent through IRC by
-        the bot owner and following the PRIVMSG DKBOT: <command> <arguments> syntax
-        For more information on IRC commands:
-        https://en.wikipedia.org/wiki/List_of_Internet_Relay_Chat_commands"""
-
-    data = priv_msg_data.group(3)
-
-    try:
-        split_data = data.split(' ', 1)
-        bot_command, message = split_data
-    except ValueError:
-        print("Invalid command syntax")
-        return
-
-    message_send(bot_command, message)
