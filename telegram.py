@@ -13,7 +13,6 @@ def get_updates():
     try:
         response = requests.get(UPDATES_URL, params=update_params)
         data = response.json()
-        print(data)
     except:
         raise ValueError("Failed to get updates")
     
@@ -26,7 +25,5 @@ def send_message(group_id, message):
 
     try:
         response = requests.post(SEND_URL, params=msg_params)
-        data = response.json()
-        print(data)
     except:
         raise ValueError("Failed to send message")
